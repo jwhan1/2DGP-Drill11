@@ -57,7 +57,9 @@ class Idle:
     @staticmethod
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
-
+    @staticmethod
+    def get_bb(boy):
+        return boy.x - 25, boy.y - 50, boy.x + 25, boy.y + 50
 
 
 class Sleep:
@@ -86,6 +88,12 @@ class Sleep:
         else:
             boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100,
                                           -3.141592 / 2, '', boy.x + 25, boy.y - 25, 100, 100)
+    @staticmethod
+    def get_bb(boy):
+        if boy.face_dir == 1:
+            return boy.x - 75, boy.y - 50, boy.x + 25, boy.y
+        else:
+            return boy.x - 25, boy.y - 50, boy.x + 75, boy.y
 
 
 class Run:
@@ -115,6 +123,9 @@ class Run:
     @staticmethod
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+    @staticmethod
+    def get_bb(boy):
+        return boy.x - 25, boy.y - 50, boy.x + 25, boy.y + 50
 
 
 
@@ -126,8 +137,8 @@ class Boy:
         self.x, self.y = 400, 90
         self.face_dir = 1
         self.ball_count = 10
-        self.font = load_font('Labs\Lecture16_Collision\ENCR10B.TTF', 16)
-        self.image = load_image('Labs/Lecture16_Collision/animation_sheet.png')
+        self.font = load_font('ENCR10B.TTF', 16)
+        self.image = load_image('animation_sheet.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
@@ -155,12 +166,17 @@ class Boy:
             self.ball_count -= 1
             ball = Ball(self.x, self.y, self.face_dir*10)
             game_world.add_object(ball)
+            game_world.add_collision_pair('ball:zombie',ball,None)
+
 
     def get_bb(self):
         # fill here
-        return self.x - 50, self.y - 50, self.x + 50, self.y + 50
+        return self.state_machine.get_bb()
 
     def handle_collision(self, group, other):
         # fill here
         if group == 'boy:ball':
             self.ball_count += 1
+        elif group == 'boy:zombie':
+            game_world.clear()
+            game_framework.quit()

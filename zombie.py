@@ -24,16 +24,16 @@ class Zombie:
 
     def load_images(self):
         if Zombie.images == None:
-            Zombie.images = {}#Labs\Lecture16_Collision\zombie\Attack (1).png
+            Zombie.images = {}
             for name in animation_names:
-                Zombie.images[name] = [load_image("Labs/Lecture16_Collision/zombie/"+ name + " (%d)" % i + ".png") for i in range(1, 11)]
+                Zombie.images[name] = [load_image("zombie/"+ name + " (%d)" % i + ".png") for i in range(1, 11)]
 
     def __init__(self):
         self.x, self.y = random.randint(1600-800, 1600), 150
         self.load_images()
         self.frame = random.randint(0, 9)
         self.dir = random.choice([-1,1])
-
+        self.life=2
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
@@ -48,11 +48,23 @@ class Zombie:
 
     def draw(self):
         if self.dir < 0:
-            Zombie.images['Walk'][int(self.frame)].composite_draw(0, 'h', self.x, self.y, 200, 200)
+            Zombie.images['Walk'][int(self.frame)].composite_draw(0, 'h', self.x, self.y, self.life*100, self.life*100)
         else:
-            Zombie.images['Walk'][int(self.frame)].draw(self.x, self.y, 200, 200)
-
+            Zombie.images['Walk'][int(self.frame)].draw(self.x, self.y, self.life*100, self.life*100)
+        draw_rectangle(*self.get_bb())
     def handle_event(self, event):
         pass
 
+    def handle_collision(self, group, other):
+        if group == 'ball:zombie':
+            if other.velocity != 0:
+                self.life = self.life-1
+                self.y = self.y - 50
+                if self.life <= 0:
+                    game_world.remove_object(self)
+        elif group == 'boy:zombie':
+            pass
+
+    def get_bb(self):
+        return self.x-self.life*50, self.y-self.life*50, self.x+self.life*50, self.y+self.life*50
 

@@ -69,3 +69,6 @@ class StateMachine:
                 return
 
         # print(f'        Warning: Event [{e}] at State [{self.cur_state}] not handled')
+    def get_bb(self):
+        return self.cur_state.get_bb(self.o)
+
